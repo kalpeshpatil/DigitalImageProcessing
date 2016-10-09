@@ -1,0 +1,190 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>myMainScript</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-30"><meta name="DC.source" content="myMainScript.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">MyMainScript</a></li><li><a href="#2">Your code here</a></li></ul></div><h2>MyMainScript<a name="1"></a></h2><pre class="codeinput">tic;
+</pre><h2>Your code here<a name="2"></a></h2><p><b>myPatchBasedFiltering</b></p><pre class="codeinput"><span class="comment">%note: we have resized image to 1/4th of original size (instead of 1/2)</span>
+<span class="comment">%as mentioned in problem statement to make our code run fast</span>
+<span class="comment">%Therefore window size and patchsize are also halved [13*13 and 5*5]</span>
+<span class="comment">%in order to maintain consistancy. The parameters are found accordingly</span>
+src1 = load(<span class="string">'../data/barbara.mat'</span>);
+src1 = src1.imageOrig;
+src1 = imresize(src1, 0.25);
+optimalSD = 0.275;
+sd = [optimalSD, optimalSD*0.9, optimalSD*1.1];
+rmsd = zeros(3);
+
+
+
+[m,n] = size(src1);
+
+maxInt = max(max(src1));
+minInt = min(min(src1));
+sigmaNoise = 0.05 * (maxInt - minInt);
+rng(1);
+noiseGauss = random(<span class="string">'Normal'</span>,0,sigmaNoise, m,n);
+noisy = src1 + noiseGauss;
+
+<span class="comment">%gaussian mask</span>
+gaussianFilter = fspecial(<span class="string">'gaussian'</span>, 13, 1.66);
+ disp(<span class="string">'Gaussian mask used for spatial filtering'</span>)
+ imshow(mat2gray(gaussianFilter),<span class="string">'InitialMagnification'</span>,2000);colorbar();axis <span class="string">on</span>; title(<span class="string">'mask for spacial sigma = 1.66'</span>);
+
+<span class="comment">%original image</span>
+figure;
+imshow(mat2gray(src1),<span class="string">'InitialMagnification'</span>, 300);colorbar();axis <span class="string">on</span>; title(<span class="string">'original'</span>);impixelinfo();
+<span class="comment">%corrupted image (noisy)</span>
+figure;
+imshow(mat2gray(noisy),<span class="string">'InitialMagnification'</span>, 300);colorbar();axis <span class="string">on</span>; title(<span class="string">'noisy'</span>);impixelinfo();
+
+
+
+<span class="keyword">for</span> i=1:3
+patchBasedFiltered = myPatchBasedFiltering(noisy, 5, 13, sd(i),1.66);
+
+rmsd(i) = sqrt((mean(mean((patchBasedFiltered - src1).^2))));
+
+<span class="comment">%patch based filtered image</span>
+
+figure;
+imshow(mat2gray((patchBasedFiltered)),<span class="string">'InitialMagnification'</span>, 300);colorbar();axis <span class="string">on</span>; title(strcat(<span class="string">'patch based filtered for sigma = '</span>,num2str(sd(i))));impixelinfo();
+<span class="comment">%rmsd value</span>
+disp(strcat(<span class="string">'rmsd = '</span>, num2str(rmsd(i))));
+
+<span class="keyword">end</span>
+
+
+toc;
+</pre><pre class="codeoutput">Gaussian mask used for spatial filtering
+rmsd =3.2417
+rmsd =3.288
+rmsd =3.2704
+Elapsed time is 300.695595 seconds.
+</pre><img vspace="5" hspace="5" src="myMainScript_01.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_02.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_03.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_04.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_05.png" alt=""> <img vspace="5" hspace="5" src="myMainScript_06.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% MyMainScript
+
+tic;
+%% Your code here
+%
+%%
+% *myPatchBasedFiltering*
+%%
+%note: we have resized image to 1/4th of original size (instead of 1/2)
+%as mentioned in problem statement to make our code run fast
+%Therefore window size and patchsize are also halved [13*13 and 5*5]
+%in order to maintain consistancy. The parameters are found accordingly
+src1 = load('../data/barbara.mat');
+src1 = src1.imageOrig;
+src1 = imresize(src1, 0.25);
+optimalSD = 0.275;
+sd = [optimalSD, optimalSD*0.9, optimalSD*1.1];
+rmsd = zeros(3);
+
+
+
+[m,n] = size(src1);
+
+maxInt = max(max(src1));
+minInt = min(min(src1));
+sigmaNoise = 0.05 * (maxInt - minInt);
+rng(1);
+noiseGauss = random('Normal',0,sigmaNoise, m,n);
+noisy = src1 + noiseGauss;
+
+%gaussian mask
+gaussianFilter = fspecial('gaussian', 13, 1.66);
+ disp('Gaussian mask used for spatial filtering')
+ imshow(mat2gray(gaussianFilter),'InitialMagnification',2000);colorbar();axis on; title('mask for spacial sigma = 1.66');
+ 
+%original image
+figure;
+imshow(mat2gray(src1),'InitialMagnification', 300);colorbar();axis on; title('original');impixelinfo();
+%corrupted image (noisy)
+figure;
+imshow(mat2gray(noisy),'InitialMagnification', 300);colorbar();axis on; title('noisy');impixelinfo();
+
+
+ 
+for i=1:3
+patchBasedFiltered = myPatchBasedFiltering(noisy, 5, 13, sd(i),1.66);
+
+rmsd(i) = sqrt((mean(mean((patchBasedFiltered - src1).^2))));
+
+%patch based filtered image
+
+figure;
+imshow(mat2gray((patchBasedFiltered)),'InitialMagnification', 300);colorbar();axis on; title(strcat('patch based filtered for sigma = ',num2str(sd(i))));impixelinfo();
+%rmsd value
+disp(strcat('rmsd = ', num2str(rmsd(i))));
+
+end
+  
+ 
+toc;
+
+##### SOURCE END #####
+--></body></html>
